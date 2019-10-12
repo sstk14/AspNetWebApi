@@ -13,7 +13,6 @@ namespace AspNetWebApi.Tests
         [TestMethod]
         public void TestMethod1()
         {
-            var testProducts = GetTestProducts();
             var controller = new AspNetWebApi.Controller.DefaultController();
             var result = controller.Get();
         }
