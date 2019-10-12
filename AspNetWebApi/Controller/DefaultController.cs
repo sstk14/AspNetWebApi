@@ -9,8 +9,11 @@ namespace AspNetWebApi.Controller
 {
     public class DefaultController : ApiController
     {
-        public DefaultController() { }
 
+        public const string APP_VALUE_KEY_NAME = "MyAppVar1";
+
+        public DefaultController() { }
+        
         // GET: api/Default1
         public IEnumerable<string> Get()
         {
@@ -18,10 +21,40 @@ namespace AspNetWebApi.Controller
         }
 
         // GET: api/Default1/5
-        public string Get(int id)
+        public string Get(string userId)
         {
-            return "value";
+            System.Web.HttpContext appContext  = System.Web.HttpContext.Current;
+
+            try
+            {
+                //ロックされていない？
+                //MyAppVar1 の値が更新されてしまう？
+                appContext.Application.Lock();
+                var state = System.Web.HttpContext.Current.Application[APP_VALUE_KEY_NAME];
+                if (state == null)
+                {
+                    appContext.Application.Add(APP_VALUE_KEY_NAME, "");
+                    appContext.Application[APP_VALUE_KEY_NAME] = userId;
+                    return (string)appContext.Application[APP_VALUE_KEY_NAME];
+                }
+                else
+                {
+                    appContext.Application[APP_VALUE_KEY_NAME] = null;
+                    return (string)appContext.Application[APP_VALUE_KEY_NAME];
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                //appContext.Application.UnLock();
+            }
+
         }
+    
 
         // POST: api/Default1
         public void Post([FromBody]string value)
